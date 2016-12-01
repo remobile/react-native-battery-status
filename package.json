@@ -1,5 +1,5 @@
 {
-    "name": "react-native-battery-status",
+    "name": "@remobile/react-native-battery-status",
     "version": "1.0.1",
     "description": "A battery-status for react-native",
     "main": "index.js",
