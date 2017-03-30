@@ -23,22 +23,23 @@
 * This class contains information about the current battery status.
 * @constructor
 */
-var exec = require('@remobile/react-native-cordova').exec;
+const exec = require('@remobile/react-native-cordova').exec;
+const { NativeEventEmitter, DeviceEventEmitter, Platform, NativeModules } = require('react-native');
+const EventEmitter = Platform.OS === 'android' ? DeviceEventEmitter : new NativeEventEmitter(NativeModules.FileTransfer);
 
-var STATUS_CRITICAL = 5;
-var STATUS_LOW = 20;
-var subscription = null;
+const STATUS_CRITICAL = 5;
+const STATUS_LOW = 20;
+let subscription = null;
 
-exports.register = function(options) {
-    var _level = null;
-    var _isPlugged = null;
-    const {onBatteryStatus, onBatteryLow, onBatteryCritical} = options;
-    if (onBatteryStatus||onBatteryLow||onBatteryCritical) {
-        subscription = EventEmitter.addListener('BATTERY_STATUS_EVENT', (info)=>{
+exports.register = function (options) {
+    let _level = null;
+    let _isPlugged = null;
+    const { onBatteryStatus, onBatteryLow, onBatteryCritical } = options;
+    if (onBatteryStatus || onBatteryLow || onBatteryCritical) {
+        subscription = EventEmitter.addListener('BATTERY_STATUS_EVENT', (info) => {
             if (info) {
                 if (_level !== info.level || _isPlugged !== info.isPlugged) {
-
-                    if(info.level === null && _level !== null) {
+                    if (info.level === null && _level !== null) {
                         return; // special case where callback is called because we stopped listening to the native side.
                     }
 
@@ -51,8 +52,7 @@ exports.register = function(options) {
                         if (_level > STATUS_CRITICAL && info.level <= STATUS_CRITICAL) {
                             // Fire critical battery event
                             onBatteryCritical && onBatteryCritical(info);
-                        }
-                        else if (_level > STATUS_LOW && info.level <= STATUS_LOW) {
+                        } else if (_level > STATUS_LOW && info.level <= STATUS_LOW) {
                             // Fire low battery event
                             onBatteryCritical && onBatteryCritical(info);
                         }
@@ -63,10 +63,10 @@ exports.register = function(options) {
             }
         });
     }
-    exec(null, null, "BatteryStatus", "start", []);
+    exec(null, null, 'BatteryStatus', 'start', []);
 };
 
-exports.unregister = function(opt) {
+exports.unregister = function (opt) {
     subscription && subscription.remove();
-    exec(null, null, "BatteryStatus", "stop", []);
+    exec(null, null, 'BatteryStatus', 'stop', []);
 };
