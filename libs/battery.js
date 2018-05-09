@@ -33,12 +33,12 @@ let subscription = null;
 
 exports.register = function (options) {
     let _level = null;
-    let _isPlugged = null;
+    let _isCharging = null;
     const { onBatteryStatus, onBatteryLow, onBatteryCritical } = options;
     if (onBatteryStatus || onBatteryLow || onBatteryCritical) {
-        subscription = EventEmitter.addListener('BATTERY_STATUS_EVENT', (info) => {
+        subscription = EventEmitter.addListener('BATTERY_STATUS_EVENT', info => {
             if (info) {
-                if (_level !== info.level || _isPlugged !== info.isPlugged) {
+                if (_level !== info.level || _isCharging !== info.isCharging) {
                     if (info.level === null && _level !== null) {
                         return; // special case where callback is called because we stopped listening to the native side.
                     }
@@ -46,7 +46,7 @@ exports.register = function (options) {
                     // Something changed. Fire batterystatus event
                     onBatteryStatus && onBatteryStatus(info);
 
-                    if (!info.isPlugged) { // do not fire low/critical if we are charging. issue: CB-4520
+                    if (!info.isCharging) { // do not fire low/critical if we are charging. issue: CB-4520
                         // note the following are NOT exact checks, as we want to catch a transition from
                         // above the threshold to below. issue: CB-4519
                         if (_level > STATUS_CRITICAL && info.level <= STATUS_CRITICAL) {
@@ -58,7 +58,7 @@ exports.register = function (options) {
                         }
                     }
                     _level = info.level;
-                    _isPlugged = info.isPlugged;
+                    _isCharging = info.isCharging;
                 }
             }
         });

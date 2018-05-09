@@ -127,17 +127,19 @@ public class BatteryListener extends CordovaPlugin {
      * @return a JSONObject containing the battery status information
      */
     private JSONObject getBatteryInfo(Intent batteryIntent) {
+
         // Are we charging / charged?
         int status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL;
         JSONObject obj = new JSONObject();
         try {
-            obj.put("level", batteryIntent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, 0));
-            obj.put("isCharging", isCharging);
+            obj.put ("isCharging", isCharging);
+            obj.put ("level", batteryIntent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, 0)); // a new JSONObject()
         } catch (JSONException e) {
             LOG.e(LOG_TAG, e.getMessage(), e);
         }
+        System.out.println(obj);
         return obj;
     }
 
@@ -149,9 +151,11 @@ public class BatteryListener extends CordovaPlugin {
      */
     private void updateBatteryInfo(Intent batteryIntent) {
         JSONObject info = this.getBatteryInfo(batteryIntent);
-        LOG.v(LOG_TAG, info.toString());
+        WritableMap params = Arguments.createMap();
         try {
-            this.sendJSEvent("BATTERY_STATUS_EVENT", JsonConvert.jsonToReact(info));
+            params.putString("level", info.getString("level"));
+            params.putBoolean("isCharging", info.getBoolean("isCharging"));
+            this.sendJSEvent("BATTERY_STATUS_EVENT", params);
         } catch (JSONException e) {
             LOG.e(LOG_TAG, e.getMessage(), e);
         }
